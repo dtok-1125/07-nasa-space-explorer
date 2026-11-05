@@ -48,7 +48,6 @@ const server = http.createServer(async (req, res) => {
       const rawData = await response.text();
 
       console.log("NASA response status:", response.status);
-      console.log("NASA response body:", rawData.slice(0, 500));
 
       if (!response.ok) {
         res.writeHead(response.status, { "Content-Type": "application/json" });
