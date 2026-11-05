@@ -79,34 +79,58 @@ async function getSpaceImages() {
   const minimumLoadingTime = new Promise((resolve) => window.setTimeout(resolve, 1000));
 
   try {
-    const params = new URLSearchParams({
-      start_date: startDate,
-      end_date: endDate
-    });
-    const response = await fetch(`/api/apod?${params}`);
-    if (requestId !== latestApodRequestId) return;
+    const nasaUrl = new URL("https://science.nasa.gov/wp-json/wp/v2/apod-basic");
+    nasaUrl.searchParams.set("date_from", startDate.slice(2).replaceAll("-", ""));
+    nasaUrl.searchParams.set("date_to", endDate.slice(2).replaceAll("-", ""));
 
-    let data;
+    const entries = [];
+    let totalPages = 1;
 
-    try {
-      data = await response.json();
-    } catch (error) {
-      throw new Error("The server returned an invalid response. Please try again later.");
+    for (let page = 1; page <= totalPages; page += 1) {
+      nasaUrl.searchParams.set("page", String(page));
+      const response = await fetch(nasaUrl);
+      if (requestId !== latestApodRequestId) return;
+
+      let data;
+
+      try {
+        data = await response.json();
+      } catch (error) {
+        throw new Error("NASA returned an invalid response. Please try again later.");
+      }
+      if (requestId !== latestApodRequestId) return;
+
+      if (!response.ok) {
+        const message = response.status === 429 || response.status === 503
+          ? `NASA's image service is temporarily busy (HTTP ${response.status}). Please wait before trying again.`
+          : data && typeof data.error === "string"
+            ? data.error
+            : data && typeof data.message === "string"
+              ? data.message
+              : `NASA image request failed (HTTP ${response.status}).`;
+
+        showGalleryMessage(message, true);
+        return;
+      }
+
+      const pageEntries = Array.isArray(data)
+        ? data
+        : data && typeof data === "object" && !data.error
+          ? [data]
+          : null;
+
+      if (!pageEntries) {
+        throw new Error("NASA returned an invalid APOD response. Please try again later.");
+      }
+
+      entries.push(...pageEntries);
+
+      const reportedTotalPages = Number(response.headers.get("X-WP-TotalPages"));
+      if (Number.isInteger(reportedTotalPages) && reportedTotalPages > 0) {
+        totalPages = reportedTotalPages;
+      }
     }
-    if (requestId !== latestApodRequestId) return;
 
-    if (!response.ok) {
-      const message = response.status === 429 || response.status === 503
-        ? `NASA's image service is temporarily busy (HTTP ${response.status}). Please wait before trying again.`
-        : typeof data.error === "string"
-          ? data.error
-          : `NASA image request failed (HTTP ${response.status}).`;
-
-      showGalleryMessage(message, true);
-      return;
-    }
-
-    const entries = Array.isArray(data) ? data : [data];
     const displayEntries = entries.filter((item) =>
       item &&
       (
