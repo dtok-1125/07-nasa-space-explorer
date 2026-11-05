@@ -10,6 +10,7 @@ const modalTitle = document.getElementById("modal-title");
 const modalExplanation = document.getElementById("modal-explanation");
 let discoveryTrigger = null;
 let previousBodyOverflow = "";
+let latestApodRequestId = 0;
 const spaceFacts = [
   "Venus is the hottest planet in our solar system, with surface temperatures around 467°C (872°F).",
   "Venus spins in the opposite direction from most planets.",
@@ -62,17 +63,20 @@ function showRandomSpaceFact() {
 }
 
 async function getSpaceImages() {
+  const requestId = ++latestApodRequestId;
   const startDate = startInput.value;
   const endDate = endInput.value;
   const getImagesButton = document.querySelector(".filters button");
 
   if (!startDate || !endDate) {
     showGalleryMessage("Choose both a start date and an end date to explore.", true);
+    getImagesButton.disabled = false;
     return;
   }
 
   getImagesButton.disabled = true;
-  showGalleryMessage("Loading space photos…");
+  showGalleryMessage("Receiving transmissions from the cosmos…", false, true);
+  const minimumLoadingTime = new Promise((resolve) => window.setTimeout(resolve, 1000));
 
   try {
     const params = new URLSearchParams({
@@ -80,6 +84,8 @@ async function getSpaceImages() {
       end_date: endDate
     });
     const response = await fetch(`/api/apod?${params}`);
+    if (requestId !== latestApodRequestId) return;
+
     let data;
 
     try {
@@ -87,6 +93,7 @@ async function getSpaceImages() {
     } catch (error) {
       throw new Error("The server returned an invalid response. Please try again later.");
     }
+    if (requestId !== latestApodRequestId) return;
 
     if (!response.ok) {
       const message = response.status === 429 || response.status === 503
@@ -115,6 +122,9 @@ async function getSpaceImages() {
       return;
     }
 
+    await minimumLoadingTime;
+    if (requestId !== latestApodRequestId) return;
+
     gallery.replaceChildren();
 
     displayEntries.forEach((item) => {
@@ -131,13 +141,17 @@ async function getSpaceImages() {
       if (item.media_type === "video") {
         card.classList.add("video-card");
         const content = document.createElement("div");
+        const playIcon = document.createElement("span");
         const label = document.createElement("span");
         const postUrl = getApodPostUrl(item);
 
         content.className = "video-card-content";
+        playIcon.className = "video-play-icon";
+        playIcon.textContent = "▶";
+        playIcon.setAttribute("aria-hidden", "true");
         label.className = "video-label";
         label.textContent = "VIDEO APOD";
-        content.append(label, title, date);
+        content.append(playIcon, label, title, date);
 
         if (postUrl) {
           const link = document.createElement("a");
@@ -145,7 +159,7 @@ async function getSpaceImages() {
           link.href = postUrl;
           link.target = "_blank";
           link.rel = "noopener noreferrer";
-          link.textContent = "View NASA APOD post";
+          link.textContent = "Watch NASA Video";
           content.appendChild(link);
         } else {
           const unavailable = document.createElement("p");
@@ -177,13 +191,16 @@ async function getSpaceImages() {
       gallery.appendChild(card);
     });
   } catch (error) {
+    if (requestId !== latestApodRequestId) return;
     console.error("Unable to load NASA images:", error.message);
     showGalleryMessage(
       error.message || "Unable to load NASA images right now. Please try again later.",
       true
     );
   } finally {
-    getImagesButton.disabled = false;
+    if (requestId === latestApodRequestId) {
+      getImagesButton.disabled = false;
+    }
   }
 }
 
@@ -303,12 +320,27 @@ discoveryModal.addEventListener("keydown", (event) => {
   }
 });
 
-function showGalleryMessage(message, isError = false) {
+function showGalleryMessage(message, isError = false, isLoading = false) {
   const placeholder = document.createElement("div");
   const paragraph = document.createElement("p");
 
-  placeholder.className = "placeholder";
+  placeholder.className = isLoading ? "placeholder loading-placeholder" : "placeholder";
   placeholder.setAttribute("role", isError ? "alert" : "status");
+  if (isLoading) {
+    const icon = document.createElementNS("http://www.w3.org/2000/svg", "svg");
+    const waves = document.createElementNS("http://www.w3.org/2000/svg", "path");
+    const center = document.createElementNS("http://www.w3.org/2000/svg", "circle");
+
+    icon.setAttribute("viewBox", "0 0 48 48");
+    icon.setAttribute("class", "transmission-icon");
+    icon.setAttribute("aria-hidden", "true");
+    waves.setAttribute("d", "M17 17a10 10 0 0 0 0 14M31 17a10 10 0 0 1 0 14M11 11a18 18 0 0 0 0 26M37 11a18 18 0 0 1 0 26");
+    center.setAttribute("cx", "24");
+    center.setAttribute("cy", "24");
+    center.setAttribute("r", "3");
+    icon.append(waves, center);
+    placeholder.appendChild(icon);
+  }
   paragraph.textContent = message;
   placeholder.appendChild(paragraph);
   gallery.replaceChildren(placeholder);
