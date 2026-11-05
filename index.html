@@ -4,6 +4,9 @@
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>NASA Space Explorer</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@100..900&display=swap" rel="stylesheet" />
   <link href="style.css" rel="stylesheet" type="text/css" />
 </head>
 <body>
@@ -46,6 +49,13 @@
       </section>
 
       <section class="gallery-section" aria-label="Space image gallery">
+        <aside class="space-fact" aria-labelledby="space-fact-title">
+          <span class="space-fact-icon" aria-hidden="true">✦</span>
+          <div>
+            <h2 id="space-fact-title">Did You Know?</h2>
+            <p id="space-fact-text"></p>
+          </div>
+        </aside>
         <div class="section-rule"><span>YOUR COSMIC COLLECTION</span></div>
         <div id="gallery" class="gallery" aria-live="polite">
           <div class="placeholder">
@@ -56,6 +66,18 @@
       </section>
     </main>
   </div>
+
+  <dialog id="discovery-modal" class="discovery-modal" aria-modal="true" aria-labelledby="modal-title" aria-describedby="modal-explanation">
+    <div class="modal-card">
+      <button class="modal-close" type="button" aria-label="Close discovery details">Close</button>
+      <img class="modal-image" alt="" />
+      <div class="modal-content">
+        <p class="modal-date"></p>
+        <h2 id="modal-title"></h2>
+        <p id="modal-explanation" class="modal-explanation"></p>
+      </div>
+    </div>
+  </dialog>
 
   <script src="js/dateRange.js"></script>
   <script src="js/script.js"></script>

@@ -309,6 +309,53 @@ button:hover span {
   transform: rotate(180deg);
 }
 
+.space-fact {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 13px;
+  margin: 0 0 23px;
+  padding: 17px 20px;
+  border: 1px solid rgba(173, 151, 255, 0.2);
+  border-radius: 14px;
+  background: linear-gradient(110deg, rgba(42, 34, 79, 0.54), rgba(20, 20, 45, 0.54));
+  box-shadow: 0 0 24px rgba(156, 123, 255, 0.18);
+  text-align: center;
+}
+
+.space-fact-icon {
+  flex: 0 0 auto;
+  color: #c4b1ff;
+  font-size: 1.15rem;
+  line-height: 1.4;
+  text-shadow: 0 0 14px rgba(166, 130, 255, 0.5);
+}
+
+.space-fact::after {
+  flex: 0 0 auto;
+  margin-left: -4px;
+  color: #c4b1ff;
+  content: "✦";
+  font-size: 1.15rem;
+  line-height: 1.4;
+  text-shadow: 0 0 14px rgba(166, 130, 255, 0.5);
+}
+
+.space-fact h2 {
+  margin-bottom: 3px;
+  color: #d3c4ff;
+  font-size: 0.74rem;
+  font-weight: 700;
+  letter-spacing: 0.13em;
+  text-transform: uppercase;
+}
+
+.space-fact p {
+  color: #e2e0f2;
+  font-size: 0.9rem;
+  line-height: 1.55;
+}
+
 .gallery {
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(min(100%, 260px), 1fr));
@@ -338,37 +385,230 @@ button:hover span {
   text-shadow: 0 0 26px rgba(166, 130, 255, 0.55);
 }
 
-.gallery > img,
 .gallery-item {
+  position: relative;
   width: 100%;
+  aspect-ratio: 4 / 3;
   overflow: hidden;
   border: 1px solid var(--border);
   border-radius: 16px;
   background: #15152b;
   box-shadow: 0 16px 38px rgba(0, 0, 0, 0.25);
+  isolation: isolate;
+  transition: transform 260ms ease, border-color 260ms ease, box-shadow 260ms ease;
 }
 
-.gallery > img {
-  display: block;
-  min-height: 200px;
-  object-fit: cover;
+.gallery-item:hover,
+.gallery-item:focus-within {
+  transform: translateY(-5px);
+  border-color: rgba(195, 174, 255, 0.9);
+  box-shadow: 0 16px 42px rgba(0, 0, 0, 0.3), 0 0 24px rgba(156, 123, 255, 0.28);
 }
 
-.gallery-item {
-  display: flex;
-  flex-direction: column;
+.gallery-item:focus-within {
+  outline: 2px solid #c4b1ff;
+  outline-offset: 4px;
 }
 
 .gallery-item img {
   display: block;
   width: 100%;
-  height: 220px;
+  height: 100%;
   object-fit: cover;
+  transition: transform 500ms cubic-bezier(0.2, 0.7, 0.2, 1);
 }
 
-.gallery-item p {
-  padding: 16px;
+.gallery-item:hover img,
+.gallery-item:focus-within img {
+  transform: scale(1.035);
+}
+
+.video-card {
+  display: grid;
+  place-items: center;
+  padding: 20px;
+  background:
+    radial-gradient(ellipse at 50% 35%, rgba(108, 78, 179, 0.3), transparent 58%),
+    linear-gradient(145deg, #17162f, #101124 72%);
+}
+
+.video-card-content {
+  display: grid;
+  justify-items: center;
+  gap: 11px;
+  width: 100%;
+  text-align: center;
+}
+
+.video-label {
+  padding: 5px 10px;
+  border: 1px solid rgba(193, 172, 255, 0.36);
+  border-radius: 999px;
+  color: #d0c0ff;
+  background: rgba(117, 82, 232, 0.16);
+  font-size: 0.68rem;
+  font-weight: 750;
+  letter-spacing: 0.13em;
+}
+
+.video-card .gallery-title {
+  display: -webkit-box;
+  -webkit-box-orient: vertical;
+  max-width: 100%;
+  -webkit-line-clamp: 3;
+  white-space: normal;
+}
+
+.video-card .gallery-date {
+  margin-top: -6px;
+}
+
+.video-link {
+  display: inline-flex;
+  min-height: 40px;
+  align-items: center;
+  justify-content: center;
+  padding: 0 15px;
+  border: 1px solid rgba(221, 209, 255, 0.3);
+  border-radius: 9px;
+  color: #fff;
+  background: linear-gradient(115deg, #7552e8, #915de4);
+  font-size: 0.8rem;
+  font-weight: 700;
+  text-decoration: none;
+  transition: filter 180ms ease, box-shadow 180ms ease;
+}
+
+.video-link:hover {
+  filter: brightness(1.1);
+  box-shadow: 0 0 20px rgba(143, 92, 238, 0.35);
+}
+
+.video-link:focus-visible {
+  outline: 2px solid #c4b1ff;
+  outline-offset: 3px;
+}
+
+.video-link-unavailable {
+  color: var(--muted);
+  font-size: 0.8rem;
+}
+
+.gallery-overlay {
+  position: absolute;
+  inset: auto 0 0;
+  display: grid;
+  gap: 7px;
+  padding: 48px 17px 16px;
+  background: linear-gradient(180deg, transparent, rgba(7, 7, 20, 0.78) 34%, rgba(7, 7, 20, 0.96));
+  transition: padding 260ms ease, background-color 260ms ease;
+}
+
+.gallery-item:hover .gallery-overlay,
+.gallery-item:focus-within .gallery-overlay {
+  padding-bottom: 19px;
+}
+
+.gallery-title {
+  overflow: hidden;
   color: var(--text);
+  font-size: 0.96rem;
+  font-weight: 650;
+  line-height: 1.35;
+  text-overflow: ellipsis;
+  text-shadow: 0 1px 5px rgba(0, 0, 0, 0.8);
+}
+
+.gallery-date {
+  color: #d3c7ff;
+  font-size: 0.76rem;
+  font-weight: 600;
+  letter-spacing: 0.04em;
+}
+
+.discovery-button {
+  justify-self: start;
+  min-height: 36px;
+  margin-top: 4px;
+  padding: 0 13px;
+  border-radius: 8px;
+  font-size: 0.78rem;
+}
+
+.discovery-modal {
+  width: min(860px, calc(100% - 32px));
+  max-width: none;
+  max-height: min(90vh, 900px);
+  margin: auto;
+  padding: 0;
+  overflow: auto;
+  border: 1px solid rgba(173, 151, 255, 0.4);
+  border-radius: 20px;
+  color: var(--text);
+  background: #101124;
+  box-shadow: 0 28px 100px rgba(0, 0, 0, 0.7), 0 0 34px rgba(156, 123, 255, 0.15);
+}
+
+.discovery-modal::backdrop {
+  background: rgba(4, 5, 16, 0.82);
+  backdrop-filter: blur(8px);
+}
+
+.modal-card {
+  position: relative;
+}
+
+.modal-close {
+  position: absolute;
+  z-index: 1;
+  top: 16px;
+  right: 16px;
+  min-height: 40px;
+  padding: 0 16px;
+  border-color: rgba(235, 227, 255, 0.5);
+  background: rgba(10, 10, 28, 0.88);
+  backdrop-filter: blur(8px);
+}
+
+.modal-image {
+  display: block;
+  width: 100%;
+  max-height: 55vh;
+  object-fit: contain;
+  background: #090a18;
+}
+
+.modal-content {
+  padding: 25px clamp(20px, 5vw, 42px) 34px;
+}
+
+.modal-date {
+  margin-bottom: 7px;
+  color: #c8b7ff;
+  font-size: 0.78rem;
+  font-weight: 700;
+  letter-spacing: 0.09em;
+  text-transform: uppercase;
+}
+
+.modal-content h2 {
+  margin-bottom: 15px;
+  color: var(--text);
+  font-size: clamp(1.3rem, 3vw, 1.8rem);
+  line-height: 1.25;
+}
+
+.modal-explanation {
+  color: #d0cfe0;
+  font-size: 0.98rem;
+  line-height: 1.8;
+  white-space: pre-wrap;
+}
+
+@media (hover: none) {
+  .gallery-overlay {
+    padding-bottom: 16px;
+  }
 }
 
 @keyframes rise-in {
@@ -440,6 +680,26 @@ button:hover span {
   input[type="date"] {
     padding: 9px 7px;
     font-size: 0.8rem;
+  }
+
+  .gallery {
+    grid-template-columns: 1fr;
+    gap: 16px;
+  }
+
+  .space-fact {
+    padding: 15px;
+  }
+
+  .discovery-modal {
+    width: calc(100% - 20px);
+    max-height: 94vh;
+    border-radius: 15px;
+  }
+
+  .modal-close {
+    top: 10px;
+    right: 10px;
   }
 }
 

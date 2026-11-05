@@ -14,6 +14,16 @@ const MIME_TYPES = {
   ".png": "image/png"
 };
 
+function isValidDate(date) {
+  if (!/^\d{4}-\d{2}-\d{2}$/.test(date)) {
+    return false;
+  }
+
+  const parsedDate = new Date(`${date}T00:00:00Z`);
+  return !Number.isNaN(parsedDate.getTime()) &&
+    parsedDate.toISOString().slice(0, 10) === date;
+}
+
 const server = http.createServer(async (req, res) => {
   // Allow our frontend to communicate with this server
   res.setHeader("Access-Control-Allow-Origin", "*");
@@ -24,71 +34,72 @@ const server = http.createServer(async (req, res) => {
     const startDate = url.searchParams.get("start_date");
     const endDate = url.searchParams.get("end_date");
 
-    if (!startDate || !endDate) {
+    if (!isValidDate(startDate || "") || !isValidDate(endDate || "")) {
       res.writeHead(400, { "Content-Type": "application/json" });
-      res.end(JSON.stringify({ error: "Please provide both dates." }));
+      res.end(JSON.stringify({ error: "Please provide valid dates in YYYY-MM-DD format." }));
       return;
     }
 
-    const apiKey = process.env.NASA_API_KEY;
-
-    if (!apiKey) {
-      res.writeHead(500, { "Content-Type": "application/json" });
-      res.end(JSON.stringify({ error: "NASA API key is missing." }));
+    if (startDate > endDate) {
+      res.writeHead(400, { "Content-Type": "application/json" });
+      res.end(JSON.stringify({ error: "The start date must be on or before the end date." }));
       return;
     }
-
-    const nasaUrl = new URL("https://api.nasa.gov/planetary/apod");
-    nasaUrl.searchParams.set("api_key", apiKey);
-    nasaUrl.searchParams.set("start_date", startDate);
-    nasaUrl.searchParams.set("end_date", endDate);
 
     try {
-      const response = await fetch(nasaUrl);
-      const rawData = await response.text();
+      const entries = [];
+      let totalPages = 1;
 
-      console.log("NASA response status:", response.status);
+      for (let page = 1; page <= totalPages; page += 1) {
+        const nasaUrl = new URL("https://science.nasa.gov/wp-json/wp/v2/apod-basic");
+        nasaUrl.searchParams.set("date_from", startDate.slice(2).replaceAll("-", ""));
+        nasaUrl.searchParams.set("date_to", endDate.slice(2).replaceAll("-", ""));
+        nasaUrl.searchParams.set("page", String(page));
 
-      if (!response.ok) {
-        res.writeHead(response.status, { "Content-Type": "application/json" });
-        res.end(JSON.stringify({
-          error: `NASA API request failed with status ${response.status}.`
-        }));
-        return;
+        const response = await fetch(nasaUrl);
+        const rawData = await response.text();
+
+        if (!response.ok) {
+          res.writeHead(response.status, { "Content-Type": "application/json" });
+          res.end(JSON.stringify({
+            error: `NASA APOD request failed with status ${response.status}.`
+          }));
+          return;
+        }
+
+        let data;
+
+        try {
+          data = JSON.parse(rawData);
+        } catch (error) {
+          console.error("NASA returned an invalid JSON response:", error);
+          res.writeHead(502, { "Content-Type": "application/json" });
+          res.end(JSON.stringify({
+            error: "NASA returned an invalid response. Please try again later."
+          }));
+          return;
+        }
+
+        if (Array.isArray(data)) {
+          entries.push(...data);
+        } else if (data && typeof data === "object" && !data.error) {
+          entries.push(data);
+        } else {
+          res.writeHead(502, { "Content-Type": "application/json" });
+          res.end(JSON.stringify({
+            error: "NASA returned an invalid APOD response. Please try again later."
+          }));
+          return;
+        }
+
+        const reportedTotalPages = Number(response.headers.get("X-WP-TotalPages"));
+        if (Number.isInteger(reportedTotalPages) && reportedTotalPages > 0) {
+          totalPages = reportedTotalPages;
+        }
       }
 
-      let data;
-
-      try {
-        data = JSON.parse(rawData);
-      } catch (error) {
-        console.error("NASA returned an invalid JSON response:", error);
-        res.writeHead(502, { "Content-Type": "application/json" });
-        res.end(JSON.stringify({
-          error: "NASA returned an invalid response. Please try again later."
-        }));
-        return;
-      }
-
-      const results = Array.isArray(data) ? data : [data];
-      const returnedLogoFallback = results.some((item) =>
-        item.title === "NASA Science" &&
-        item.url === "https://science.nasa.gov/wp-content/themes/nasa-child/assets/images/nasa-logo@2x.png"
-      );
-
-      if (returnedLogoFallback) {
-        console.error("NASA returned its generic logo instead of APOD data.");
-        res.writeHead(502, { "Content-Type": "application/json" });
-        res.end(JSON.stringify({
-          error: "NASA returned a generic response instead of Astronomy Picture of the Day data. Please try again later."
-        }));
-        return;
-      }
-
-      res.writeHead(response.status, {
-        "Content-Type": "application/json"
-      });
-      res.end(JSON.stringify(data));
+      res.writeHead(200, { "Content-Type": "application/json" });
+      res.end(JSON.stringify(entries));
     } catch (error) {
       console.error("NASA request failed:", error);
       res.writeHead(502, { "Content-Type": "application/json" });
