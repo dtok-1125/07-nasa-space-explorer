@@ -24,7 +24,7 @@ if (!response.ok) {
 
 const data = await response.json();
 console.log("NASA data:", data);
+}
 
 const getImagesButton = document.querySelector('.filters button');
 getImagesButton.addEventListener('click', getSpaceImages);
-  
