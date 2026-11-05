@@ -13,7 +13,7 @@ async function getSpaceImages() {
   const startDate = startInput.value;
   const endDate = endInput.value;
 
-  const apiUrl = `https://api.nasa.gov/planetary/apod?api_key=DEMO_KEY&start_date=${startDate}&end_date=${endDate}`;
+  const apiUrl = `/api/apod?start_date=${startDate}&end_date=${endDate}`;
 
   const response = await fetch(apiUrl);
 
