@@ -703,6 +703,95 @@ button:hover span {
   }
 }
 
+.site-footer {
+  width: min(100% - 48px, 1120px);
+  margin: 0 auto;
+  border-top: 1px solid rgba(183, 166, 255, 0.18);
+  text-align: center;
+}
+
+.footer-inner {
+  display: grid;
+  justify-items: center;
+  gap: 12px;
+  padding: 34px 0 28px;
+}
+
+.footer-brand {
+  display: inline-flex;
+  align-items: center;
+  gap: 9px;
+  color: #d3c9ff;
+  font-size: 0.85rem;
+  font-weight: 700;
+  letter-spacing: 0.18em;
+}
+
+.footer-nasa-logo {
+  height: 1.5em;
+  width: auto;
+  object-fit: contain;
+}
+
+.footer-tagline {
+  color: #e2e0f2;
+  font-size: 0.92rem;
+}
+
+.footer-attribution,
+.footer-disclaimer {
+  max-width: 680px;
+  color: #b7b5cf;
+  font-size: 0.8rem;
+  line-height: 1.6;
+}
+
+.footer-links {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 10px 24px;
+}
+
+.footer-links a {
+  color: #cbbaff;
+  font-size: 0.84rem;
+  text-decoration-color: rgba(203, 186, 255, 0.5);
+  text-underline-offset: 4px;
+}
+
+.footer-links a:hover {
+  color: #eee8ff;
+  text-decoration-color: currentColor;
+}
+
+.footer-links a:focus-visible {
+  border-radius: 2px;
+  outline: 2px solid #c4b1ff;
+  outline-offset: 4px;
+}
+
+.footer-disclaimer {
+  color: #9997b4;
+  font-size: 0.74rem;
+}
+
+@media (max-width: 440px) {
+  .site-footer {
+    width: min(100% - 28px, 380px);
+  }
+
+  .footer-inner {
+    gap: 10px;
+    padding: 28px 0 24px;
+  }
+
+  .footer-attribution,
+  .footer-disclaimer {
+    max-width: 34ch;
+  }
+}
+
 @media (prefers-reduced-motion: reduce) {
   *,
   *::before,
