@@ -732,14 +732,18 @@ button:hover span {
   }
 
   .discovery-modal {
-    width: calc(100% - 20px);
-    max-height: 94vh;
+    width: calc(100% - env(safe-area-inset-left, 0px) - env(safe-area-inset-right, 0px) - 20px);
+    max-height: calc(100vh - env(safe-area-inset-top, 0px) - env(safe-area-inset-bottom, 0px) - 20px);
+    max-height: calc(100dvh - env(safe-area-inset-top, 0px) - env(safe-area-inset-bottom, 0px) - 20px);
+    margin: max(10px, env(safe-area-inset-top, 0px)) auto max(10px, env(safe-area-inset-bottom, 0px));
     border-radius: 15px;
   }
 
   .modal-close {
+    position: sticky;
     top: 10px;
-    right: 10px;
+    right: auto;
+    margin: 0 10px -40px auto;
   }
 }
 
