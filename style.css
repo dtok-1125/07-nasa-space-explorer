@@ -449,6 +449,8 @@ button:hover span {
 
 .video-card {
   display: grid;
+  width: min(100%, 300px);
+  justify-self: center;
   place-items: center;
   padding: 20px;
   background:
