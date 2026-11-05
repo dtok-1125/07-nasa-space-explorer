@@ -47,10 +47,44 @@ const server = http.createServer(async (req, res) => {
       const response = await fetch(nasaUrl);
       const rawData = await response.text();
 
-console.log("NASA response status:", response.status);
-console.log("NASA response body:", rawData.slice(0, 500));
+      console.log("NASA response status:", response.status);
+      console.log("NASA response body:", rawData.slice(0, 500));
 
-const data = JSON.parse(rawData);
+      if (!response.ok) {
+        res.writeHead(response.status, { "Content-Type": "application/json" });
+        res.end(JSON.stringify({
+          error: `NASA API request failed with status ${response.status}.`
+        }));
+        return;
+      }
+
+      let data;
+
+      try {
+        data = JSON.parse(rawData);
+      } catch (error) {
+        console.error("NASA returned an invalid JSON response:", error);
+        res.writeHead(502, { "Content-Type": "application/json" });
+        res.end(JSON.stringify({
+          error: "NASA returned an invalid response. Please try again later."
+        }));
+        return;
+      }
+
+      const results = Array.isArray(data) ? data : [data];
+      const returnedLogoFallback = results.some((item) =>
+        item.title === "NASA Science" &&
+        item.url === "https://science.nasa.gov/wp-content/themes/nasa-child/assets/images/nasa-logo@2x.png"
+      );
+
+      if (returnedLogoFallback) {
+        console.error("NASA returned its generic logo instead of APOD data.");
+        res.writeHead(502, { "Content-Type": "application/json" });
+        res.end(JSON.stringify({
+          error: "NASA returned a generic response instead of Astronomy Picture of the Day data. Please try again later."
+        }));
+        return;
+      }
 
       res.writeHead(response.status, {
         "Content-Type": "application/json"
