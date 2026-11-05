@@ -24,7 +24,17 @@ if (!response.ok) {
 
 const data = await response.json();
 console.log("NASA data:", data);
-}
+const gallery = document.getElementById("gallery");
 
+gallery.innerHTML = "";
+
+data.forEach((item) => {
+  const image = document.createElement("img");
+  image.src = item.url;
+  image.alt = item.title;
+
+  gallery.appendChild(image);
+});
+}
 const getImagesButton = document.querySelector('.filters button');
 getImagesButton.addEventListener('click', getSpaceImages);
